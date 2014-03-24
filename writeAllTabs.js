@@ -3,20 +3,13 @@ To write all the tabs to HTML
 tabs should be of type tab defined by chrome
 */
 
-var node = document.getElementById('formspace');
-var focusfunction = "return false;";
+var form = document.getElementById('formspace');
 
 function writeAllTabs () {
 	chrome.tabs.query( { }, function (tabs){
 		//var form = document.createElement('form');
 		//form.setAttribute('id','myform');
 	for (var i = 0; i < tabs.length; i++) {
-		
-    	/*var item = tabs[i].url;
-    	var title = tabs[i].title;
-    	var icon = tabs[i].favIconUrl;
-    	//console.log(item);
-    	writeToHtml(item,title,icon);*/
     	writeToHtml(tabs[i],i);
 	}
 	});
@@ -32,7 +25,7 @@ function writeToHtml(tab,number){
 	var br = document.createElement('br');
 	var favIcon = document.createElement('img');
 	var newinput = document.createElement('input');
-	//var node = document.createElement('span');
+	var node = document.createElement('span');
 
 //<input class="hobbies" type="checkbox" value="movies" href="www.google.com"/>Movies
 	newinput.setAttribute('class', 'urlList');
@@ -45,7 +38,6 @@ function writeToHtml(tab,number){
 	favIcon.setAttribute('width','16');
 	node.appendChild(favIcon);
 
-	newlink.setAttribute('id',number);
 	newlink.setAttribute('href', item);
 	newlink.setAttribute('class', 'clickable');
 	newlink.setAttribute('onClick',"return false;");
@@ -53,6 +45,9 @@ function writeToHtml(tab,number){
 	node.appendChild(newlink);
 	
 	node.appendChild(br);
+	node.setAttribute('id',number);
+	node.setAttribute('class','content');
+	form.appendChild(node);
 }
 
 function check(){
@@ -63,7 +58,7 @@ function check(){
    //alert(checkedhobbies[i].value)
    var value = checkedhobbies[i].value;
    var selected = document.getElementById(value);
-     alert(selected.innerHTML);
+   selected.parentNode.removeChild(selected);
   }
   return false
  }
