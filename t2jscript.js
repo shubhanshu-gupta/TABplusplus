@@ -10,7 +10,18 @@ function writeTabs (windows) {
       	//d.insertAdjacentHTML('afterbegin','<li id="0">'+tabs[0].title+'</li>');
         for (var j= 0; j< windows.length; j++){
           var inputsyntax = '<br><label><br><input type="checkbox" class="urlList" value=';
-          d1.insertAdjacentHTML('beforeend', '<div >'+inputsyntax+-1+'>Windows '+j+'</label><br></div>');
+
+           if(j==0)
+          {
+            var s1 = '<div >'+inputsyntax+-1+'>Windows '+j+'</label><br></div>';
+            d1.innerHTML = s1;
+          }
+          else
+          {
+          d1.insertAdjacentHTML('beforeend', '<div >'+inputsyntax+-1+'>Windows '+j+'</label><br></div>');    
+          }
+
+
         var tabs = windows[j].tabs;
       	for(var i=0;i<tabs.length;i++)
          {
@@ -30,7 +41,7 @@ function printAll()
     var key = localStorage.key(i);
 //    document.write('<button class="btn btn-default btn-lg" id='+key+'>'+key+'</button><br>');
   var d1=document.getElementById('SavedSession');
-  d1.insertAdjacentHTML('afterend', '<button class="btn btn-default btn-lg" id='+key+'>'+key+'</button><br>');
+  d1.insertAdjacentHTML('afterend', '<button class="btn btn-primary btn-lg" id='+key+' style="width:300px;height:60px;">'+key+'</button><br>');
 
   var but = document.getElementById(key);
   but.addEventListener('click',function(){myfunc(this.id);})
@@ -50,7 +61,7 @@ function save(windows){
   storage.setItem(key, item);
   alert(key+' Session Saved');
   var d1=document.getElementById('SavedSession');
-  d1.insertAdjacentHTML('afterend', '<button class="btn btn-default btn-lg" id='+key+'>'+key+'</button><br>');
+  d1.insertAdjacentHTML('afterend', '<button class="btn btn-primary btn-lg" id='+key+' style="width:300px;height:60px;">'+key+'</button><br>');
 
   var but = document.getElementById(key);
   but.addEventListener('click',function(){myfunc(this.id);})
