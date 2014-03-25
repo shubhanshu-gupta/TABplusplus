@@ -10,6 +10,7 @@ function writeTabs (windows) {
       	//d.insertAdjacentHTML('afterbegin','<li id="0">'+tabs[0].title+'</li>');
         for (var j= 0; j< windows.length; j++){
           var inputsyntax = '<br><label><br><input type="checkbox" class="urlList" value=';
+<<<<<<< HEAD
 
            if(j==0)
           {
@@ -22,12 +23,16 @@ function writeTabs (windows) {
           }
 
 
+=======
+          d1.insertAdjacentHTML('beforeend', '<div >'+inputsyntax+-1+'>Windows '+j+'</label><br></div>');
+>>>>>>> 1a2ff406b215324a8ba2efe8aa7a34da065f8d0c
         var tabs = windows[j].tabs;
       	for(var i=0;i<tabs.length;i++)
          {
          	d1.insertAdjacentHTML('beforeend', '<span id='+i+'>'+inputsyntax+i+'><a href='+tabs[i].url+'>'+tabs[i].title+'</a>'+'</label><br></span>');
          }
           updateTabsNumber(tabs.length);
+<<<<<<< HEAD
         }
 }
 
@@ -53,10 +58,16 @@ function printAll()
 
 
 
+=======
+        }                             
+}
+
+>>>>>>> 1a2ff406b215324a8ba2efe8aa7a34da065f8d0c
 function save(windows){
   var storage = localStorage;
   var key = prompt("Enter New Session Name","Zero");
   var item = JSON.stringify(windows);
+<<<<<<< HEAD
   item[0]
   storage.setItem(key, item);
   alert(key+' Session Saved');
@@ -66,6 +77,10 @@ function save(windows){
   var but = document.getElementById(key);
   but.addEventListener('click',function(){myfunc(this.id);})
 
+=======
+  storage.setItem(key, item);
+  alert(key+' Session Saved');
+>>>>>>> 1a2ff406b215324a8ba2efe8aa7a34da065f8d0c
 }
 function remove(){
   var checkedhobbies=document.querySelectorAll('input[class="urlList"]:checked')
@@ -84,6 +99,7 @@ function updateTabsNumber(length){
           d2.innerHTML = length + temp;
 }
 getAllWindows(writeTabs);
+<<<<<<< HEAD
 
 printAll();
 
@@ -125,3 +141,7 @@ function myfunc(iid) {
 //}
 
 }
+=======
+document.getElementById("Save").onclick = function () { getAllWindows(save); };
+document.getElementById("Delete").onclick = remove//function () { alert('hello!'); };
+>>>>>>> 1a2ff406b215324a8ba2efe8aa7a34da065f8d0c
