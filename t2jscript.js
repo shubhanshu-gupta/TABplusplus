@@ -10,7 +10,7 @@ function writeTabs (windows) {
         //d.insertAdjacentHTML('afterbegin','<li id="0">'+tabs[0].title+'</li>');
 
         currentWindows = windows;
-
+        var sum=0, minus=0;
         for (var j= 0; j< windows.length; j++){
           var inputsyntax = '<br><label><br><input type="checkbox" class="urlList" value=';
         
@@ -28,10 +28,20 @@ function writeTabs (windows) {
         var tabs = windows[j].tabs;
         for(var i=0;i<tabs.length;i++)
          {
+          if(tabs[i].title=="tAB++" || tabs[i].title=="New Tab")
+          {
+            minus++;
+          }
+          else
+        {
           d1.insertAdjacentHTML('beforeend', '<span id='+i+'>'+inputsyntax+i+'><a href='+tabs[i].url+'>'+tabs[i].title+'</a>'+'</label><br></span>');
-         }
-          updateTabsNumber(tabs.length);
         }
+         }
+         sum += tabs.length;
+          }
+          sum -= minus;
+          updateTabsNumber(sum);
+        
 }
 
 
@@ -59,16 +69,42 @@ function printAll()
 function save(windows){
   var storage = localStorage;
   var key = prompt("Enter New Session Name","Zero");
+  if(key!=null)
+  {
+    var flag = localStorage[key];
+
+    if(flag==undefined)
+    {
   var item = JSON.stringify(windows);
-  item[0]
   storage.setItem(key, item);
   alert(key+' Session Saved');
   var d1=document.getElementById('SavedSession');
   d1.insertAdjacentHTML('afterend', '<button class="btn btn-primary btn-lg" id='+key+' style="width:300px;height:60px;">'+key+'</button><br>');
 
   var but = document.getElementById(key);
-  but.addEventListener('click',function(){myfunc(this.id);})
+  but.addEventListener('click',function(){myfunc(this.id);})    
+    }
+    else
+    {
+      var r = confirm("Do you want to merge???");
+      if(r==true)
+      {
+        var oldwindows = JSON.parse(localStorage.getItem(key));
+        var newwindows = oldwindows.concat(windows);
+     var item = JSON.stringify(newwindows);
+     localStorage.setItem(key, item);
+     alert("Merge Done");
+   }
+   else{
+    var item = JSON.stringify(windows);  
+     storage.setItem(key, item);
+     alert(key+' Session Saved');
+   
 
+      }
+    }
+  
+}
 }
 function remove(){
   var checkedhobbies=document.querySelectorAll('input[class="urlList"]:checked')
@@ -84,7 +120,7 @@ function updateTabsNumber(length){
 
           var d2=document.getElementById('number');
           var temp = parseInt(d2.innerHTML);
-          d2.innerHTML = length + temp;
+          d2.innerHTML = length;// + temp;
 }
 
 function openWindow(){
@@ -99,7 +135,17 @@ function openWindow(){
        len++;
      }
    }
+   if(i!=0)
+   {
    chrome.windows.create({url:arr});
+ }
+ else
+ {
+  for(k=0; k<len; k++)
+  {
+    chrome.tabs.create({url:arr[k]});
+  }
+ }
  }
 }
 
