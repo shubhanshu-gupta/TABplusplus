@@ -6,13 +6,15 @@ function getAllWindows(callback){
 }
 function writeTabs (windows) {
       //chrome.tabs.query({'active': false, 'windowId': chrome.windows.WINDOW_ID_CURRENT}, function(tabs){
-      	//var d=document.getElementById('t2');
-      	//d.insertAdjacentHTML('afterbegin','<li id="0">'+tabs[0].title+'</li>');
+        //var d=document.getElementById('t2');
+        //d.insertAdjacentHTML('afterbegin','<li id="0">'+tabs[0].title+'</li>');
+
+        currentWindows = windows;
+
         for (var j= 0; j< windows.length; j++){
           var inputsyntax = '<br><label><br><input type="checkbox" class="urlList" value=';
-<<<<<<< HEAD
-
-           if(j==0)
+        
+          if(j==0)
           {
             var s1 = '<div >'+inputsyntax+-1+'>Windows '+j+'</label><br></div>';
             d1.innerHTML = s1;
@@ -22,11 +24,11 @@ function writeTabs (windows) {
           d1.insertAdjacentHTML('beforeend', '<div >'+inputsyntax+-1+'>Windows '+j+'</label><br></div>');    
           }
 
-
+        
         var tabs = windows[j].tabs;
-      	for(var i=0;i<tabs.length;i++)
+        for(var i=0;i<tabs.length;i++)
          {
-         	d1.insertAdjacentHTML('beforeend', '<span id='+i+'>'+inputsyntax+i+'><a href='+tabs[i].url+'>'+tabs[i].title+'</a>'+'</label><br></span>');
+          d1.insertAdjacentHTML('beforeend', '<span id='+i+'>'+inputsyntax+i+'><a href='+tabs[i].url+'>'+tabs[i].title+'</a>'+'</label><br></span>');
          }
           updateTabsNumber(tabs.length);
         }
@@ -54,11 +56,6 @@ function printAll()
 
 
 
-
-        }                             
-}
-
-
 function save(windows){
   var storage = localStorage;
   var key = prompt("Enter New Session Name","Zero");
@@ -72,8 +69,6 @@ function save(windows){
   var but = document.getElementById(key);
   but.addEventListener('click',function(){myfunc(this.id);})
 
-  storage.setItem(key, item);
-  alert(key+' Session Saved');
 }
 function remove(){
   var checkedhobbies=document.querySelectorAll('input[class="urlList"]:checked')
@@ -91,18 +86,36 @@ function updateTabsNumber(length){
           var temp = parseInt(d2.innerHTML);
           d2.innerHTML = length + temp;
 }
-getAllWindows(writeTabs);
 
+function openWindow(){
+
+  for(i=0;i<currentWindows.length;i++){
+   var tabs = currentWindows[i].tabs;
+   var arr = new Array();
+   var len = 0;
+   for(j=0; j<tabs.length;j++){
+     if(tabs[j].title != "tAB++" && tabs[j].title != "New Tab"){
+       arr[len] = tabs[j].url;
+       len++;
+     }
+   }
+   chrome.windows.create({url:arr});
+ }
+}
+
+getAllWindows(writeTabs);
 
 printAll();
 
-document.getElementById("Save").onclick = function () { getAllWindows(save); };
+document.getElementById("Save").onclick = function () { save(currentWindows) };
 document.getElementById("Delete").onclick = remove//function () { alert('hello!'); };
+document.getElementById("Restore").onclick = function() { openWindow();};
 
 function myfunc(iid) {
 
 //document.write(iid);
-   var tabs = JSON.parse(localStorage.getItem(iid))
+   var tabs = JSON.parse(localStorage.getItem(iid));
+   currentWindows = tabs;
 
    writeTabs(tabs);
 
@@ -134,7 +147,3 @@ function myfunc(iid) {
 //}
 
 }
-
-document.getElementById("Save").onclick = function () { getAllWindows(save); };
-document.getElementById("Delete").onclick = remove//function () { alert('hello!'); };
-
