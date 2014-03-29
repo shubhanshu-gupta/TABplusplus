@@ -1,7 +1,7 @@
-function Tab(title, url, favIconUrl){
-  this.title = title;
-  this.url = url;
-  this. favIconUrl = favIconUrl;
+function Tab(tab){
+  this.title = tab.title;
+  this.url = tab.url;
+  this.favIconUrl = tab.favIconUrl;
   //this.hashtags = hashtags;
 }
 /*
@@ -15,59 +15,59 @@ function Window(id){
 }
 
 Window.prototype.pushtab = function (tab) {
-  var newtab = new Tab(tab.title, tab.url, tab.favIconUrl);
-  this.tabs.push(newtab);
+  this.tabs.push( new Tab(tab) );
 }
 
-Window.prototype.update(value){
-  var id = parseInt(value);
-  if (str.indexOf("win") >= 0){
-    
-  }
-}
 var sessionWin = new Array();
 
 /*
  * returns all open windows to callback function
 */
 function getAllWindows(callback){
-          chrome.windows.getAll( {populate : true}, function (windows){
-            for (var i = 0; i < windows.length; i++) {
-              sessionWin.push(new Window(windows[i].id) );
-              var tabs = windows[i].tabs;
-              for (var j = 0; j < tabs.length; j++) {
-                sessionWin[i].pushtab(tabs[j]);
-              };
-            };
-            //callback(windows);
-            callback(sessionWin);
-          });
+  chrome.windows.getAll( {populate : true}, function (windows){
+    for (var i = 0; i < windows.length; i++) {
+      sessionWin.push(new Window(windows[i].id) );
+      var tabs = windows[i].tabs;
+      for (var j = 0; j < tabs.length; j++) {
+        if(tabs[j].title != "tAB++" && tabs[j].title != "New Tab"){
+          for(var x=0,flag=true, y=sessionWin[i].tabs.length; x < y; x++)
+            if(sessionWin[i].tabs[x].title == tabs[j].title){
+              flag = false; break;
+            }
+          if(flag)
+          sessionWin[i].pushtab(tabs[j]);    
+        }
+      }
+    }
+    callback(sessionWin);
+  });
 }
 /*
  * write tabs to the main html page with checkbox;
- * all windows displaying label has id of type win##;  ## represent number
- * all tabs displaying tags have id of type win##tab##;
+ * all windows displaying label has id of type ##win;  ## represent number
+ * all tabs displaying tags have id of type ##win##tab;
  * both windows and tabs labels have class 'urlList' 
  * checkbox are present before each url and window 
 */
 function writeTabs (windows) {
 
   var d1=document.getElementById('t2');
-  d1.innerHTML = '<div></div>'; // Empty div for start
+  d1.innerHTML = '<div></div>';
+  updateTabsNumber(0);
   var winid = 0, tabid = 0;
   var label = '<label style="margin: 1em 0 0 0;"><input type="checkbox" class="urlList" value=';
-  var winbutton =  '<button style="background:none;border:none;" id="winbuttonno"';
+  var winbutton =  '<button style="background:none;border:none;" id=';
   for (var j= 0; j< windows.length; j++){
-    winid = "win" + j;
-    d1.insertAdjacentHTML('beforeend','<div id='+winid+'>'+label+winid+'>'+winbutton+j+'> Windows '+j+'</button></label><br></div>');    
-    var winnode = document.getElementById(winid);
-    //winnode.onclick = function(){  alert("open window "+ j) };
+    winid = j+"win";
+    d1.insertAdjacentHTML('beforeend','<div id='+winid+'>'+label+winid+'>'+winbutton+j+'winbutton> Windows '+j+'</button></label><br></div>');    
+    d1 = document.getElementById(winid);
+    document.getElementById(j+"winbutton").onclick = function(){  alert("open window "+ this.id) };
     var tabs = windows[j].tabs;
     for(var i=0;i<tabs.length;i++) {
-      tabid = winid+"tab"+i;
+      tabid = winid+i+"tab";
       var favIcon = '<img height="16" width="16" hspace="8" src='+tabs[i].favIconUrl+'>  ';
       var atag = '<a href='+tabs[i].url+'>'+tabs[i].title+'</a>';
-      winnode.insertAdjacentHTML('beforeend','<span id='+tabid+'>'+label+tabid+'>'+favIcon+atag+'</label><br></span>');
+      d1.insertAdjacentHTML('beforeend','<span id='+tabid+'>'+label+tabid+'>'+favIcon+atag+'</label><br></span>');
      }
      //d1.insertAdjacentHTML('beforeend', '</div>');  //end jth windows div 
       updateTabsNumber(tabs.length);
@@ -81,9 +81,9 @@ function writeTabs (windows) {
 function createButton(documentid, buttonid, buttonname){
 
   var d1=document.getElementById(documentid);
-  var button = '<button class="btn btn-primary btn-lg" ';
-  var buttonstyle = 'style="width:300px;height:60px;">';
-  d1.insertAdjacentHTML('afterend', button+'id='+buttonid+buttonstyle+buttonname+'</button><br>');
+  var button = '<button class="btn btn-primary btn-lg" id=';
+  var buttonstyle = ' style="width:300px;height:60px;">';
+  d1.insertAdjacentHTML('afterend', button+buttonid+buttonstyle+buttonname+'</button><br>');
 }
 
 /*
@@ -95,9 +95,10 @@ function printAll() {
   for(i=0; i<localStorage.length;i++) {
 
     var key = localStorage.key(i);
-    createButton('SavedSession', key, key);
+    createButton('SavedSession', "button"+key, key);
 
-    var but = document.getElementById(key);
+    var but = document.getElementById("button"+key);
+    //if(but)
     but.addEventListener('click',function(){myfunc(this.id);})
 
   }
@@ -106,17 +107,17 @@ function printAll() {
 * save the windows to local storage 
 * key is provided by user and is used both as session name and key in localstorage
 */
-function save(windows){
+function save(){
   var storage = localStorage;
-  var key = prompt("Enter New Session Name","");
+  var key = prompt("Enter New Session Name",null);
   if(key != null)
-  var item = JSON.stringify(windows);
+  var item = JSON.stringify(sessionWin);
   storage.setItem(key, item);
   alert(key+' Session Saved');
 
-  createButton('SavedSession', key, key);
+  createButton('SavedSession', "button"+key, key);
 
-  var but = document.getElementById(key);
+  var but = document.getElementById("button"+key);
   but.addEventListener('click',function(){myfunc(this.id);})
 
 }
@@ -127,12 +128,12 @@ function removeTabs(){
   var checkedhobbies=document.querySelectorAll('input[class="urlList"]:checked')
   for (var i=0; i<checkedhobbies.length; i++){
    var value = checkedhobbies[i].value;
-   var selected = document.getElementById(value);
-   selected.parentNode.removeChild(selected);
-   sessionWin.update(value);
+   var winid = parseInt(value);
+    sessionWin.splice(winid, 1);
+    writeTabs(sessionWin);
   }
-  updateTabsNumber(-1*checkedhobbies.length);
 }
+
 /*
  * update tabs number on following events
  * displaying currently open session
@@ -174,7 +175,7 @@ function myfunc(iid) {
    writeTabs(tabs);
 }
 
-document.getElementById("Save").onclick = function () { getAllWindows(save) };
+document.getElementById("Save").onclick = function () { save(); };
 document.getElementById("Delete").onclick = function() { removeTabs(); };
 document.getElementById("Restore").onclick = function() { openWindow();};
 
