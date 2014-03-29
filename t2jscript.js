@@ -1,6 +1,8 @@
 var d1=document.getElementById('t2');
+var currentSessionID = -1;
 function getAllWindows(callback){
           chrome.windows.getAll( {populate : true}, function (windows){
+            currentSessionID = -1;
             callback(windows);
           });
 }
@@ -12,8 +14,8 @@ function writeTabs (windows) {
         currentWindows = windows;
         var sum=0, minus=0;
         for (var j= 0; j< windows.length; j++){
-          var inputsyntax = '<br><label><br><input type="checkbox" class="urlList" value=';
-        
+          var inputsyntax = '<br><label><br><input type="checkbox" name = "tab_checkbox" class="urlList" value=';
+
           if(j==0)
           {
             var s1 = '<div >'+inputsyntax+-1+'>Windows '+j+'</label><br></div>';
@@ -34,7 +36,7 @@ function writeTabs (windows) {
           }
           else
         {
-          d1.insertAdjacentHTML('beforeend', '<span id='+i+'>'+inputsyntax+i+'><a href='+tabs[i].url+'>'+tabs[i].title+'</a>'+'</label><br></span>');
+          d1.insertAdjacentHTML('beforeend', '<span id='+i+'>'+inputsyntax+i+'><a target = "_blank" href='+tabs[i].url+'>'+tabs[i].title+'</a>'+'</label><br></span>');
         }
          }
          sum += tabs.length;
@@ -79,7 +81,7 @@ function save(windows){
   storage.setItem(key, item);
   alert(key+' Session Saved');
   var d1=document.getElementById('SavedSession');
-  d1.insertAdjacentHTML('afterend', '<button class="btn btn-primary btn-lg" id='+key+' style="width:300px;height:60px;">'+key+'</button><br>');
+  d1.insertAdjacentHTML('afterend', '<button class="btn btn-primary btn-lg" id='+key+'style="width:300px;height:60px;">'+key+'</button><br>');
 
   var but = document.getElementById(key);
   but.addEventListener('click',function(){myfunc(this.id);})    
@@ -107,13 +109,43 @@ function save(windows){
 }
 }
 function remove(){
-  var checkedhobbies=document.querySelectorAll('input[class="urlList"]:checked')
-  for (var i=0; i<checkedhobbies.length; i++){
-   var value = checkedhobbies[i].value;
-   var selected = document.getElementById(value);
-   selected.parentNode.removeChild(selected);
+
+  var checkboxes = document.getElementsByName("tab_checkbox");
+
+ k=0;
+
+  for(i=0;i<currentWindows.length;i++)
+  {
+    var tabs = currentWindows[i].tabs;
+    k++;
+    for(j=0;j<tabs.length;j++)
+    {
+      if(checkboxes[k].checked)
+      {
+        currentWindows[i].tabs.splice(j,1);
+      }
+      k++;
+    }
+    writeTabs(currentWindows);
+
+    if(currentSessionID!=-1)
+    {
+      key = currentSessionID;
+      var item = JSON.stringify(currentWindows);
+      localStorage.setItem(key,item);
+      alert("Your changes have been saved in session named as: "+ key);
+    }
+
   }
-  updateTabsNumber(-1*checkedhobbies.length);
+
+  // var checkedhobbies=document.querySelectorAll('input[class="urlList"]:checked')
+  // for (var i=0; i<checkedhobbies.length; i++){
+  //  var value = checkedhobbies[i].value;
+  //  var selected = document.getElementById(value);
+  //  selected.parentNode.removeChild(selected);
+  // }
+
+  // updateTabsNumber(-1*checkedhobbies.length);
 }
 
 function updateTabsNumber(length){
@@ -154,14 +186,16 @@ getAllWindows(writeTabs);
 printAll();
 
 document.getElementById("Save").onclick = function () { save(currentWindows) };
-document.getElementById("Delete").onclick = remove//function () { alert('hello!'); };
+document.getElementById("Delete").onclick = function () {remove() ;};//function () { alert('hello!'); };
 document.getElementById("Restore").onclick = function() { openWindow();};
+document.getElementById("currentSession").onclick = function(){getAllWindows(writeTabs);};
 
 function myfunc(iid) {
 
 //document.write(iid);
    var tabs = JSON.parse(localStorage.getItem(iid));
    currentWindows = tabs;
+   currentSessionID = iid;
 
    writeTabs(tabs);
 
