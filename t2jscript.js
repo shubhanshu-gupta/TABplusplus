@@ -125,14 +125,26 @@ function remove(){
   {
     var tabs = currentWindows[i].tabs;
     k++;
-    for(j=0;j<tabs.length;j++)
+    for(j=0;j<tabs.length;)//j++)
     {
+      if(tabs[j].title!="tAB++" && tabs[j].title!="New Tab")
+      {
       if(checkboxes[k].checked)
       {
         currentWindows[i].tabs.splice(j,1);
       }
+      else
+      {
+        j++;
+      }
       k++;
     }
+    else
+    {
+      j++;
+    }
+  }
+}
     writeTabs(currentWindows);
 
     if(currentSessionID!=-1)
@@ -153,7 +165,7 @@ function remove(){
   // }
 
   // updateTabsNumber(-1*checkedhobbies.length);
-}
+
 
 function updateTabsNumber(length){
 
