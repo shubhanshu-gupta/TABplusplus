@@ -261,6 +261,31 @@ else
 }
 
 
+function deleteSession()
+{
+  var checkboxes = document.getElementsByName("buttonbox");
+ // alert(checkboxes.length);
+ 
+  
+   //var key = "merged";
+   var cnt = 0;
+   var flag=0;
+   var oldwindows = new Array();
+   for(i=0;i<checkboxes.length;i++){
+     if(checkboxes[i].checked){
+       // cnt++;
+       flag=1;
+       var iiid = checkboxes[i].id;
+       var size = iiid.length;
+       var iid = iiid.substr(1,size-2);
+        localStorage.removeItem(iid);  
+    }
+     
+   }
+   location.reload();
+}
+
+
 getAllWindows(writeTabs);
 
 printAll();
