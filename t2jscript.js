@@ -56,7 +56,8 @@ function printAll()
     var key = localStorage.key(i);
 //    document.write('<button class="btn btn-default btn-lg" id='+key+'>'+key+'</button><br>');
   var d1=document.getElementById('SavedSession');
-  d1.insertAdjacentHTML('afterend', '<button class="btn btn-primary btn-lg" id='+key+' style="width:300px;height:60px;">'+key+'</button><br>');
+  var key1 = "@"+key+"@";
+  d1.insertAdjacentHTML('afterend', '<input type="checkbox" id= '+key1+' name = "buttonbox">&nbsp &nbsp<button class="btn btn-primary btn-lg" id='+key+' style="width:250px;height:50px;">'+key+'</button><br>');
 
   var but = document.getElementById(key);
   but.addEventListener('click',function(){myfunc(this.id);})
@@ -81,7 +82,13 @@ function save(windows){
   storage.setItem(key, item);
   alert(key+' Session Saved');
   var d1=document.getElementById('SavedSession');
-  d1.insertAdjacentHTML('afterend', '<button class="btn btn-primary btn-lg" id='+key+'style="width:300px;height:60px;">'+key+'</button><br>');
+  var key1 = "@"+key+"@";
+  d1.insertAdjacentHTML('afterend', '<input type="checkbox" id= '+key1+' name = "buttonbox">&nbsp &nbsp<button class="btn btn-primary btn-lg" id='+key+' style="width:250px;height:50px;">'+key+'</button><br>');
+ // d1.insertAdjacentHTML('afterend', '<input type="checkbox" id= '+key1+' name = "buttonbox">&nbsp &nbsp<button class="btn btn-primary btn-lg" id='+key+' style="width:250px;height:50px;">'+key+'</button><br>');
+
+
+ // console.log(key);
+
 
   var but = document.getElementById(key);
   but.addEventListener('click',function(){myfunc(this.id);})    
@@ -181,14 +188,91 @@ function openWindow(){
  }
 }
 
+
+function mergeSession(){
+  var checkboxes = document.getElementsByName("buttonbox");
+ // alert(checkboxes.length);
+   var key = prompt("Enter Name of the merged session: ");
+
+  
+   //var key = "merged";
+   
+   if(key!=null)
+   {
+   var cnt = 0;
+   var flag=0;
+   var oldwindows = new Array();
+   for(i=0;i<checkboxes.length;i++){
+     if(checkboxes[i].checked){
+       // cnt++;
+       flag=1;
+       var iiid = checkboxes[i].id;
+       var size = iiid.length;
+       var iid = iiid.substr(1,size-2);
+       var windows = JSON.parse(localStorage.getItem(iid));
+       oldwindows = oldwindows.concat(windows);
+     }
+     
+   }
+
+   if(flag==0)
+   {
+    alert("You must check atleast one checkbox");
+   }
+   else
+   {
+
+     var r = confirm("Do you want the merged sessions to be deleted?");
+    // console.log(oldwindows.length);
+   // alert(cnt);
+   var item = JSON.stringify(oldwindows);
+   localStorage.setItem(key, item);
+   var d1=document.getElementById('SavedSession');
+   // d1.insertAdjacentHTML('afterend', '<img src="cross.png" id = "@%'+key+'%@"  style="max-height: 20px; max-width: 20px;" title = "Delete Session"/> <button class="btn btn-primary btn-lg" id='+key+' style="width:260px;height:60px;" >'+key+'</button><br>');
+   var key1 = "@"+key+"@";
+   d1.insertAdjacentHTML('afterend', '<input type = "checkbox" id = '+key1+'name = "buttonbox" >&nbsp &nbsp<button class="btn btn-primary btn-lg" id='+key+' style="width:250px;height:50px;" >'+key+'</button><br>');
+
+   
+   var but = document.getElementById(key);
+   but.addEventListener('click',function(){myfunc(this.id);})
+    // alert(key);
+}
+    if(r==true)
+{
+
+  for(i=0;i<checkboxes.length;i++){
+     if(checkboxes[i].checked){
+       // cnt++;
+       var iiid = checkboxes[i].id;
+       var size = iiid.length;
+       var iid = iiid.substr(1,size-2);
+       localStorage.removeItem(iid);
+
+     }
+   }
+   location.reload();
+   //printAll();
+}
+else
+{
+  //Do nothing
+}
+}
+}
+
+
 getAllWindows(writeTabs);
 
 printAll();
 
+
+//The list of ClickListeners
 document.getElementById("Save").onclick = function () { save(currentWindows) };
-document.getElementById("Delete").onclick = function () {remove() ;};//function () { alert('hello!'); };
+document.getElementById("Delete").onclick = function () {remove() ;};
 document.getElementById("Restore").onclick = function() { openWindow();};
 document.getElementById("currentSession").onclick = function(){getAllWindows(writeTabs);};
+document.getElementById("Merge").onclick = function(){mergeSession();};
+document.getElementById("Delbutton").onclick = function(){deleteSession();};
 
 function myfunc(iid) {
 
