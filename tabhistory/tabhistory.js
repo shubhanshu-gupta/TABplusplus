@@ -1,6 +1,3 @@
-document.addEventListener('DOMContentLoaded', function () {
-  getmylist("map");
-});
 
 function onAnchorClick(event) {
   chrome.tabs.create({
@@ -35,56 +32,6 @@ function buildPopupDom(divName, data) {
 
 function getmylist(divName)
 { 
-/*
-	chrome.tabs.onCreated(function(tab)
-  {  var k = tab.id ; 
-     alert(k);
-     //arr[k] = new Array();
-  }
-    )
-  
-  
-  chrome.tabs.onUpdated(function(tabId , changeInfo , tab){
-    //arr[k].push(changeInfo.url);
-    //alert(changeInfo.url);
-    document.getElementById(divName).innerHTML =  changeInfo.url ;
-  })
-  
-  chrome.tabs.query({currentWindow: true, active: true},function(tabs) { 
-  	
-	 var d = tabs[0].url;
-
-   document.getElementById(divName).innerHTML = d ;
-  
-
-   
-	 for(i = 0 ; i < arr[d].length ; i++)
-	 	{
-	 		document.getElementById(divName).innerHTML =  " next link: " + arr[d][i];
-	 	}
-	 
-	});
-*/
-/*
- chrome.tabs.query({currentWindow: true, active: true},function(tabs) { 
-   //var d = tabs[0].url; 
-   //window.alert(a[tabs[0].id]);
-   document.getElementById(divName).innerHTML =  a[tabs[0].id];
-
-  });
-
-  chrome.tabs.onCreated.addListener(function(tab){ a[tab.id]=[];});
-
-  chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-  if(changeInfo.status=='complete'){
-    a[tabId].push(tab.url);
-   document.getElementById(divName).innerHTML =  a[tabId];
-  }
-
-  }
-); 
-
-*/
 
 chrome.extension.sendMessage("request",function(response){
  var b = response ;
@@ -121,3 +68,4 @@ chrome.tabs.query({},function(tabs) {
 });
 }
 
+getmylist("map");

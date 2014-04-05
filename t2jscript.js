@@ -1,65 +1,4 @@
-/*
-* global variables 
-* 
-*/
-var sessionWin = new Array();
-var currentSessionID = -1;
 
-
-function Tab(tab){
-  this.id = tab.id;
-  this.title = tab.title;
-  this.url = tab.url;
-  this.favIconUrl = tab.favIconUrl;
-  this.hashtags = " ";
-  this.annotation = "";
-  //this.tabhistory = getTabHistory(this.id);
-}
-
-Tab.prototype.pushHashTags = function (hashtags) {
-  this.hashtags += hashtags + " ";
-}
-
-Tab.prototype.pushAnnotation = function (annotation) {
-  this.annotation += annotation;
-}
-/*Tab.prototype.updateTabHistory = function () {
-  this.tabhistory = getTabHistory(this.id);
-}*/
-function Window(id,tabs){
-  this.id = id;
-  this.tabs = tabs==null ? new Array() : tabs;
-}
-
-
-Window.prototype.pushtab = function (tab) {
-  this.tabs.push( new Tab(tab) );
-}
-
-function update_sessionWin(windows){
-  sessionWin.length = 0;
-  var tabpp = new Tab({id:-1, title: "tAB++", url: " tab++", favIconUrl: "null"});
-  var newtab = new Tab({id:-2, title: "New Tab", url: " new tab", favIconUrl: "null"});
-  var alltabs = new Array(); alltabs.push(tabpp); alltabs.push(newtab);
-
-  for (var i = 0; i < windows.length; i++) {
-      var tempwindow = new Window(windows[i].id,null);
-      var tabs = windows[i].tabs;
-
-      for (var j = 0; j < tabs.length; j++) {
-          for(var x=0,flag=true, y=alltabs.length; x < y; x++) {
-            if(alltabs[x].title == tabs[j].title){
-              flag = false; break;
-            }
-            alltabs.push(tabs[j]);
-          }
-          if(flag)
-          tempwindow.pushtab(tabs[j]);    
-      }
-      if(tempwindow.tabs.length > 0) 
-        sessionWin.push(new Window(tempwindow.id,tempwindow.tabs));
-    }
-}
 /*
  * returns all open windows to callback function
 */
@@ -127,56 +66,6 @@ function createButton(documentid, buttonid, buttonname){
   d1.insertAdjacentHTML('afterend', button+buttonid+buttonstyle+buttonname+'</button><br>');
 }
 
-/*
- * display all stored sessions from local storage to main HTML page.
- * assign the onclick function for these stores sessions
-* checkbox infront of Saved sessions have id @key@ and class savedsession
-*/
-function printAll()
-{
-  for(i=0; i<localStorage.length;i++) {
-  var key = localStorage.key(i);
-  var d1=document.getElementById('SavedSession');
-  d1.insertAdjacentHTML('afterend', '<input type="checkbox" id= @'+key+'@ class="savedsession">&nbsp &nbsp');
-  createButton("SavedSession",key,key);
-
-  var but = document.getElementById(key);
-  but.addEventListener('click',function(){myfunc(this.id);})
-  }
-}
-/*
-* save the windows to local storage 
-* key is provided by user and is used both as session name and key in localstorage
-* checkbox infront of Saved sessions have id @key@ and class savedsession
-*/
-function save(windows){
-  var storage = localStorage;
-  var key = prompt("Enter New Session Name","Default");
-  if(key!=null && key != "") {
-    var flag = localStorage[key];
-    if(flag==undefined) {         // The key is new and has not been used
-      var item = JSON.stringify(windows);
-      storage.setItem(key, item);
-      alert(key+' Session Saved');
-      var d1=document.getElementById('SavedSession');
-      d1.insertAdjacentHTML('afterend', '<input type="checkbox" id= @'+key+'@'+' class="savedsession" >&nbsp &nbsp');
-      createButton("SavedSession",key,key);
-
-      var but = document.getElementById(key);
-      but.addEventListener('click',function(){myfunc(this.id);})    
-    }
-    else {
-      var r = confirm("Do you want to merge???");
-      if(r==true) {
-        var finalwindows = JSON.parse(localStorage.getItem(key));
-        update_sessionWin(finalwindows.concat(windows));
-        var item = JSON.stringify(sessionWin);
-        localStorage.setItem(key, item);
-        alert("Merge Done");
-      }
-    }
-  }
-}
 /*
 * remove tabs that are selected using checkboxes from the main HTML page 
 * checkbox value is of type #win where # represent windows index in sessionWin
@@ -262,7 +151,8 @@ function openUrl(atag){
   var winno = parseInt(button.value);
   var tabno = parseInt(button.id);
   var tab = sessionWin[winno].tabs[tabno];
-  if(tab){    
+  if(tab){   
+  alert(tab.hashtags); 
     var value = prompt("Please Enter " +type);
     if(value == null || value == "") return;
     if(type == "hash") {
@@ -282,83 +172,23 @@ function openUrl(atag){
     
   }
  }
-/*
- * merge two or more saved sessions 
- * option to delete the sessions that are being merged 
- */
-
-function mergeSession() {
-  var checkboxes =  document.querySelectorAll('input[class="savedsession"]:checked');
-
-  if(checkboxes.length < 2) {
-    alert(checkboxes.length+"You must check atleast two checkbox");
-    return;
-  }
-  var r = false, key = "nokey";
-  key = prompt("Enter Name of the merged session: ");
-  r = confirm("Do you want the merged sessions to be deleted?");
-
-  if(key!=null && key!= "") {
-  var i =0,flag=0 ,finalwindows = new Array();
-  for(i=0;i<checkboxes.length;i++){
-     flag=1;
-     var iiid = checkboxes[i].id;
-     var size = iiid.length;
-     var iid = iiid.substr(1,size-2);
-     var windows = JSON.parse(localStorage.getItem(iid));
-     finalwindows = finalwindows.concat(windows);
-     if(r==true)
-      localStorage.removeItem(iid);
-  }
-    update_sessionWin(finalwindows);
-    var item = JSON.stringify(sessionWin);
-    localStorage.setItem(key, item);
-    var d1=document.getElementById('SavedSession');
-    d1.insertAdjacentHTML('afterend', '<input type="checkbox" id= '+'@'+key+'@'+' class="savedsession">&nbsp &nbsp');
-    createButton("SavedSession",key,key);
-
-    var but = document.getElementById(key);
-    but.addEventListener('click',function(){myfunc(this.id);}) 
-    location.reload();
-  }
-  else 
-    alert("Please enter valid key");
-}
-/*
- * delete sessions from localstorage and write it to main HTML 
-*/
-
-function deleteSession()
-{ 
-  var checkboxes =  document.querySelectorAll('input[class="savedsession"]:checked');
-   var flag=0;
-   for(i=0;i<checkboxes.length;i++){
-       flag=1;
-       var iiid = checkboxes[i].id;
-       var size = iiid.length;
-       var iid = iiid.substr(1,size-2);
-        localStorage.removeItem(iid);   
-   }
-   location.reload();
-}
-
-/*
- * retrievs session from localstorage and write it to main HTML 
-*/
-function myfunc(iid) {
-   var tabs = JSON.parse(localStorage.getItem(iid));
-   update_sessionWin(tabs);
-   currentSessionID = iid;
-   updateTabsNumber(0);
-   writeTabs(tabs);
-}
+function display(hashtag){
+  for (var i = 0; i < sessionWin.length; i++) {
+    var tabs = sessionWin[i].tabs;
+    for (var j = 0; j < tabs.length; j++) {
+      if (tabs[j].searchHashTag(hashtag))
+        alert(tabs[j].title);
+      
+    };
+  };
+ }
 
 document.getElementById("Save").onclick = function () { save(sessionWin); };
 document.getElementById("Delete").onclick = function() { removeCheckedboxes(); };
 document.getElementById("Restore").onclick = function() { openWindow(sessionWin , -1);};
 document.getElementById("currentSession").onclick = function(){getAllWindows(writeTabs);};
-document.getElementById("Merge").onclick = function(){mergeSession();};
-document.getElementById("Delbutton").onclick = function(){deleteSession();};
-
+//document.getElementById("Merge").onclick = function(){mergeSession();};
+//document.getElementById("Delbutton").onclick = function(){deleteSession();};
+document.getElementById("Search").onclick = function() { display(document.getElementById("searchtext").value);}
 getAllWindows(writeTabs);
-printAll();
+//printAll();

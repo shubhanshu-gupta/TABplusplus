@@ -17,6 +17,7 @@ chrome.tabs.query({windowId:chrome.windows.WINDOW_ID_CURRENT},function(tabs){
     chrome.tabs.create({url: 't2.html'});
   });
 });
+
 /*
  * Checks for changes in all open tabs 
 */
