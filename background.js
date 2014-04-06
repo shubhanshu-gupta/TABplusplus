@@ -1,31 +1,42 @@
 var flag = 0;
-
+/*
+ * Refocus the tab++ page if it is open else create new 
+*/
 chrome.browserAction.onClicked.addListener( function(tab) {
 
+chrome.tabs.create({url:chrome.extension.getURL("tabhistory/main.html")});
 chrome.tabs.query({windowId:chrome.windows.WINDOW_ID_CURRENT},function(tabs){
-       // alert(tabs.length);
-       var size = tabs.length;
-       flag = 0;
-       for(i=0;i<size;i++){
-               if(tabs[i].title == "tAB++"){
-               	
-               	chrome.tabs.update(tabs[i].id,{selected:true, url:'t2.html'});
-                flag = 1;
-                        // alert("loop  "+flag);
-              //  console.log(flag);
-                break;
-               }
-       }
-       creat();
-       // alert(tabs[tabs.length-1].title);});
+
+ for(i=0;i<tabs.length;i++){
+    if(tabs[i].title == "tAB++"){
+    	chrome.tabs.update(tabs[i].id,{selected:true, url:'t2.html'});
+    break;
+    }
+  }
+  if(flag==0)
+    chrome.tabs.create({url: 't2.html'});
+  });
 });
 
-function creat(){
-       // alert(flag);
-        if(flag==0)
-                chrome.tabs.create({url: 't2.html'});
-}
+/*
+ * Checks for changes in all open tabs 
+*/
 
- //chrome.tabs.create({url: 't2.html'});
+var a = new Array();
 
+chrome.tabs.onCreated.addListener(function(tab){ 
+  a[tab.id]=[];
+  //alert(tab.id);
+});
+
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+  if(changeInfo.status=='complete'){
+    a[tabId].push(tab.url);
+   //alert();
+  }
+  }
+); 
+
+chrome.extension.onMessage.addListener(function(request, sender , sendResponse){
+  sendResponse(a);  
 });
