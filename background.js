@@ -10,10 +10,10 @@ chrome.tabs.query({windowId:chrome.windows.WINDOW_ID_CURRENT},function(tabs){
  for(i=0;i<tabs.length;i++){
     if(tabs[i].title == "tAB++"){
     	chrome.tabs.update(tabs[i].id,{selected:true, url:'t2.html'});
-    break;
+      return;
     }
   }
-  if(flag==0)
+  //if(flag==0)
     chrome.tabs.create({url: 't2.html'});
   });
 });

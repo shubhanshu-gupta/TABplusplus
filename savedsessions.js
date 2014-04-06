@@ -27,6 +27,7 @@ function save(windows){
   else var key = currentSessionID;
   if(key!=null && key != "") {
     var flag = localStorage[key];
+    //if(!(key in localstorage)) {
     if(flag==undefined) {         // The key is new and has not been used
       var item = JSON.stringify(windows);
       storage.setItem(key, item);
@@ -110,6 +111,37 @@ function deleteSession()
    location.reload();
 }
 
+function getAllSavedSessions(){
+  var session = new Array();
+  for (var key in localStorage){
+   var item = JSON.parse(localStorage.getItem(key));
+   session.push(item);
+  }
+  return session;
+}
+function display(hashtags){
+  var session = getAllSavedSessions();
+  var windows = new Array();
+  windows.push(new Window(0,null));
+  //alert("hello")
+  for(var k = 0; k < session.length; k++) {
+    var win = session[k];//alert("hellobvvvvv")
+  for (var i = 0; i < win.length; i++) {
+    var tabs = win[i].tabs;
+    for (var j = 0; j < tabs.length; j++) {
+      for (var l = 0; l < hashtags.length; l++) {
+        if(hashtags[l].indexOf('#') > -1)
+        if(tabs[j].hashtags.indexOf(hashtags[l]) > -1) {
+        //alert(k + "-"+i+"-"+j+tabs[j].title);
+        windows[0].pushtab(tabs[j]);
+      } 
+      };     
+    };
+  };
+};
+   update_sessionWin(windows);
+   writeTabs(sessionWin);
+}
 /*
  * retrievs session from localstorage and write it to main HTML 
 */
@@ -118,6 +150,7 @@ function myfunc(iid) {
    update_sessionWin(tabs);
    currentSessionID = iid;
    updateTabsNumber(0);
+   document.getElementById("Save").innerHTML = "Update";
    writeTabs(tabs);
 }
 document.getElementById("Save").onclick = function () { save(sessionWin); };

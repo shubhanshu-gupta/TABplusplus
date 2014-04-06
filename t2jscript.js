@@ -6,6 +6,7 @@ function getAllWindows(callback){
   chrome.windows.getAll( {populate : true}, function (windows){
     update_sessionWin(windows);
     currentSessionID = -1;
+    document.getElementById("Save").innerHTML = "Save";
     callback(sessionWin);
   });
 }
@@ -141,7 +142,17 @@ function openWindow(windows , index){
  */
 function openUrl(atag){
   var url = atag.href;
-  alert(url);
+  chrome.tabs.query({windowId:chrome.windows.WINDOW_ID_CURRENT},function(tabs){
+
+ for(i=0;i<tabs.length;i++){
+    if(tabs[i].url == url){
+      chrome.tabs.update(tabs[i].id,{highlighted:true});
+    return;
+    }
+  }
+  //if(flag==0)
+    chrome.tabs.create({url: url});
+  });
 }
 /*
  * gets hash tags or annotation from user and push it in respective tabs
@@ -153,16 +164,20 @@ function openUrl(atag){
   var tab = sessionWin[winno].tabs[tabno];
   if(tab){   
   alert(tab.hashtags); 
-    var value = prompt("Please Enter " +type);
+    var value = prompt("Please Enter " + type);
     if(value == null || value == "") return;
+
     if(type == "hash") {
-      var hashtags = value;
-    if(hashtags.indexOf('#') > -1){
-      tab.pushHashTags(hashtags);
-      alert(tab.hashtags);
+      var hashtags = value.split(" ");
+      for (var i = 0; i < hashtags.length; i++) {
+        if(hashtags[i].indexOf('#') > -1){
+        tab.pushHashTags(hashtags[i]);
+        updateAllHashtags(hashtags[i], new Tabposition(currentSessionID, winno, tab.id));
+        
+        }
+        else alert("Error Please enter # in hash tags");
+      };
     }
-    else alert("Error Please enter # in hash tags");
-  }
     else if (type == "annotation"){
       //alert(tab.annotation);
       var annotation = value;
@@ -172,23 +187,24 @@ function openUrl(atag){
     
   }
  }
-function display(hashtag){
-  for (var i = 0; i < sessionWin.length; i++) {
-    var tabs = sessionWin[i].tabs;
-    for (var j = 0; j < tabs.length; j++) {
-      if (tabs[j].searchHashTag(hashtag))
-        alert(tabs[j].title);
-      
+function searchall(text){
+  var hashtags;
+  hashtags = text.split(" ");
+  if(hashtags.length != undefined){
+    display(hashtags)
+    for (var i = 0; i < hashtags.length; i++) {
+      /*if( hashtags[i] in allHashtags ){
+        var h = allHashtags[hashtags[i]]      }*/
+        if(hashtags[i].indexOf('#') > -1)
+          display(hashtags[i])
     };
-  };
- }
+  }
+}
+
 
 document.getElementById("Save").onclick = function () { save(sessionWin); };
 document.getElementById("Delete").onclick = function() { removeCheckedboxes(); };
 document.getElementById("Restore").onclick = function() { openWindow(sessionWin , -1);};
 document.getElementById("currentSession").onclick = function(){getAllWindows(writeTabs);};
-//document.getElementById("Merge").onclick = function(){mergeSession();};
-//document.getElementById("Delbutton").onclick = function(){deleteSession();};
-document.getElementById("Search").onclick = function() { display(document.getElementById("searchtext").value);}
+document.getElementById("Search").onclick = function() { searchall(document.getElementById("searchtext").value);}
 getAllWindows(writeTabs);
-//printAll();
