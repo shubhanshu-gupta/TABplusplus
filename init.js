@@ -15,7 +15,7 @@ function Tab(tab){
   this.favIconUrl = tab.favIconUrl;
   this.hashtags = tab.hashtags==null ? "" : tab.hashtags;
   this.annotation = tab.annotation==null ? "" :tab.annotation;
-  //this.tabhistory = getTabHistory(this.id);
+  this.tabhistory = tab.tabhistory==null ? [] :tab.tabhistory;
 }
 
 Tab.prototype.pushHashTags = function (hashtag) {
@@ -32,9 +32,25 @@ Tab.prototype.pushAnnotation = function (annotation) {
   this.annotation += annotation;
 }
 
-/*Tab.prototype.updateTabHistory = function () {
-  this.tabhistory = getTabHistory(this.id);
-}*/
+Tab.prototype.pushTabhistory = function (history) {
+  for(var j = 0 ; j < history.length ; j++) {
+    if (history[j] == "chrome://newtab/") 
+      history.splice(j,1); 
+
+    else if( j+1 < history.length) {
+      if (history[j] == history[j+1]) { 
+        var z = 1 ;
+        do {
+          z++;
+        } while( j+z < history.length && history[j] == history[j+z])
+          
+        history.splice(j,z-1);
+      }
+    }
+  }
+  this.tabhistory = history;
+  //alert(this.tabhistory);
+}
 
 function Window(id,tabs){
   this.id = id;

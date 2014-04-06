@@ -1,10 +1,8 @@
-var flag = 0;
 /*
  * Refocus the tab++ page if it is open else create new 
 */
 chrome.browserAction.onClicked.addListener( function(tab) {
 
-chrome.tabs.create({url:chrome.extension.getURL("tabhistory/main.html")});
 chrome.tabs.query({windowId:chrome.windows.WINDOW_ID_CURRENT},function(tabs){
 
  for(i=0;i<tabs.length;i++){
@@ -13,7 +11,6 @@ chrome.tabs.query({windowId:chrome.windows.WINDOW_ID_CURRENT},function(tabs){
       return;
     }
   }
-  //if(flag==0)
     chrome.tabs.create({url: 't2.html'});
   });
 });
@@ -25,7 +22,7 @@ chrome.tabs.query({windowId:chrome.windows.WINDOW_ID_CURRENT},function(tabs){
 var a = new Array();
 
 chrome.tabs.onCreated.addListener(function(tab){ 
-  a[tab.id]=[];
+  a[tab.id]= new Array();
   //alert(tab.id);
 });
 

@@ -7,6 +7,9 @@ function getAllWindows(callback){
     update_sessionWin(windows);
     currentSessionID = -1;
     document.getElementById("Save").innerHTML = "Save";
+    chrome.extension.sendMessage("request",function(response){
+    addTabhistory(response);
+  });
     callback(sessionWin);
   });
 }
@@ -195,6 +198,17 @@ function searchall(text){
   }
 }
 
+function addTabhistory(tabhistory){
+  for (var i = 0; i < sessionWin.length; i++) {
+    var tabs = sessionWin[i].tabs;
+    for (var j = 0; j < tabs.length; j++) {
+      var tabid = tabs[j].id;
+      var history = tabhistory[tabid];
+      if(history)
+      tabs[j].pushTabhistory(history);
+    };
+  };
+}
 
 document.getElementById("Save").onclick = function () { save(sessionWin); };
 document.getElementById("Delete").onclick = function() { removeCheckedboxes(); };

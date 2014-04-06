@@ -117,6 +117,7 @@ function getAllSavedSessions(){
    var item = JSON.parse(localStorage.getItem(key));
    session.push(item);
   }
+  session.push(sessionWin);
   return session;
 }
 function display(hashtags){
