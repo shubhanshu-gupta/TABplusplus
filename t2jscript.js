@@ -191,13 +191,7 @@ function searchall(text){
   var hashtags;
   hashtags = text.split(" ");
   if(hashtags.length != undefined){
-    display(hashtags)
-    for (var i = 0; i < hashtags.length; i++) {
-      /*if( hashtags[i] in allHashtags ){
-        var h = allHashtags[hashtags[i]]      }*/
-        if(hashtags[i].indexOf('#') > -1)
-          display(hashtags[i])
-    };
+    display(hashtags);
   }
 }
 
