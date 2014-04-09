@@ -4,6 +4,10 @@
 */
 var sessionWin = new Array();
 var currentSessionID = -1;
+var stack = [];
+var queue = [];
+var allHashtags = {}/*JSON.parse(localStorage.getItem("@hashtags@"));
+if(allHashtags == null) allHashtags = {};*/
 
 
 function Tab(tab){
@@ -11,13 +15,13 @@ function Tab(tab){
   this.title = tab.title;
   this.url = tab.url;
   this.favIconUrl = tab.favIconUrl;
-  this.hashtags = tab.hashtags==null ? " ":tab.hashtags;
-  this.annotation = tab.annotation==null ? " ":tab.annotation;
-  //this.tabhistory = getTabHistory(this.id);
+  this.hashtags = tab.hashtags==null ? "" : tab.hashtags;
+  this.annotation = tab.annotation==null ? "" :tab.annotation;
+  this.tabhistory = tab.tabhistory==null ? [] :tab.tabhistory;
 }
 
-Tab.prototype.pushHashTags = function (hashtags) {
-  this.hashtags += hashtags + " ";
+Tab.prototype.pushHashTags = function (hashtag) {
+  this.hashtags += hashtag + " ";
 }
 
 Tab.prototype.searchHashTag = function (hashtag) {
@@ -30,9 +34,25 @@ Tab.prototype.pushAnnotation = function (annotation) {
   this.annotation += annotation;
 }
 
-/*Tab.prototype.updateTabHistory = function () {
-  this.tabhistory = getTabHistory(this.id);
-}*/
+Tab.prototype.pushTabhistory = function (history) {
+  for(var j = 0 ; j < history.length ; j++) {
+    if (history[j] == "chrome://newtab/") 
+      history.splice(j,1); 
+
+    else if( j+1 < history.length) {
+      if (history[j] == history[j+1]) { 
+        var z = 1 ;
+        do {
+          z++;
+        } while( j+z < history.length && history[j] == history[j+z])
+          
+        history.splice(j,z-1);
+      }
+    }
+  }
+  this.tabhistory = history;
+  //alert(this.tabhistory);
+}
 
 function Window(id,tabs){
   this.id = id;
@@ -42,6 +62,38 @@ function Window(id,tabs){
 
 Window.prototype.pushtab = function (tab) {
   this.tabs.push( new Tab(tab) );
+}
+
+function Tabposition(sessionKey, windowindex, tabid){
+  this.sessionKey = sessionKey;
+  this.windowindex = windowindex;
+  this.tabid = tabid;
+  //alert(this.tabid);
+}
+
+Tabposition.prototype.getTab = function (hashtag){
+  var session = localStorage.getItem(this.sessionKey);
+  if(session != null){    
+      var result = null;
+    var win = session[this.windowindex];
+    if(win != null){
+      var tabs = win.tabs;
+      for (var i = 0; i < tabs.length; i++) {
+        if(tabs[i].id == this.tabid)
+        //if(tabs[i].hashtags.indexOf(hashtag) > -1)
+          result = tabs[i];
+      };
+      //alert(result);
+      return result;
+    }
+  }
+}
+
+function updateAllHashtags(hashtag, tabposition){
+  if( allHashtags[hashtag] == undefined)
+    allHashtags[hashtag] = new Array();
+  allHashtags[hashtag].push(tabposition);
+  //alert(allHashtags[hashtag][0].sessionKey + "ytatatta");
 }
 
 function update_sessionWin(windows){

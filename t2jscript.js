@@ -6,6 +6,10 @@ function getAllWindows(callback){
   chrome.windows.getAll( {populate : true}, function (windows){
     update_sessionWin(windows);
     currentSessionID = -1;
+    document.getElementById("Save").innerHTML = "Save";
+    chrome.extension.sendMessage("request",function(response){
+    addTabhistory(response);
+  });
     callback(sessionWin);
   });
 }
@@ -62,33 +66,40 @@ function createButton(documentid, buttonid, buttonname){
 
   var d1=document.getElementById(documentid);
   var button = '<button class="btn btn-primary btn-lg" id=';
-  var buttonstyle = ' style="width:300px;height:60px;">';
+  var buttonstyle = ' style="width:250px;height:50px;">';
   d1.insertAdjacentHTML('afterend', button+buttonid+buttonstyle+buttonname+'</button><br>');
 }
 
 /*
-* remove tabs that are selected using checkboxes from the main HTML page. 
-* checkbox value is of type #win where # represent windows index in sessionWin.
-* checkbox id is of type #tab where # is tab index in tabs array.
+* remove tabs that are selected using checkboxes from the main HTML page 
+* checkbox value is of type #win where # represent windows index in sessionWin
+* checkbox id is of type #tab where # is tab index in tabs array
 */
 function removeCheckedboxes(){
-
+  
   var checkedboxes=document.querySelectorAll('input[class="urlList"]:checked');
+  var win = new Array();
+  copy(sessionWin,win);
+  
+  stack.push(win);
+  stack.push(currentSessionID);
+  console.log(checkedboxes.length);
   for (var i=0; i<checkedboxes.length; i++){
    var value = checkedboxes[i].value;
    var id = checkedboxes[i].id;
-   //console.log(value + id);
+   console.log(value + id);
    var winno = parseInt(value);
-
+   
     if(id == 'null')
     sessionWin.splice(winno, 1);
-
+    
     else {      
       var tabno = parseInt(id);
       sessionWin[winno].tabs.splice(tabno,1);
       
     }
   }
+
   writeTabs(sessionWin);
   if(currentSessionID!=-1)
     {
@@ -141,7 +152,17 @@ function openWindow(windows , index){
  */
 function openUrl(atag){
   var url = atag.href;
-  alert(url);
+  chrome.tabs.query({windowId:chrome.windows.WINDOW_ID_CURRENT},function(tabs){
+
+ for(i=0;i<tabs.length;i++){
+    if(tabs[i].url == url){
+      chrome.tabs.update(tabs[i].id,{highlighted:true});
+    return;
+    }
+  }
+  //if(flag==0)
+    chrome.tabs.create({url: url});
+  });
 }
 /*
  * gets hash tags or annotation from user and push it in respective tabs
@@ -153,16 +174,20 @@ function openUrl(atag){
   var tab = sessionWin[winno].tabs[tabno];
   if(tab){   
   alert(tab.hashtags); 
-    var value = prompt("Please Enter " +type);
+    var value = prompt("Please Enter " + type);
     if(value == null || value == "") return;
+
     if(type == "hash") {
-      var hashtags = value;
-    if(hashtags.indexOf('#') > -1){
-      tab.pushHashTags(hashtags);
-      alert(tab.hashtags);
+      var hashtags = value.split(" ");
+      for (var i = 0; i < hashtags.length; i++) {
+        if(hashtags[i].indexOf('#') > -1){
+        tab.pushHashTags(hashtags[i]);
+        updateAllHashtags(hashtags[i], new Tabposition(currentSessionID, winno, tab.id));
+        
+        }
+        else alert("Error Please enter # in hash tags");
+      };
     }
-    else alert("Error Please enter # in hash tags");
-  }
     else if (type == "annotation"){
       //alert(tab.annotation);
       var annotation = value;
@@ -172,23 +197,140 @@ function openUrl(atag){
     
   }
  }
-function display(hashtag){
+function searchall(text){
+  var hashtags;
+  hashtags = text.split(" ");
+  if(hashtags.length != undefined){
+    display(hashtags);
+  }
+}
+
+function addTabhistory(tabhistory){
   for (var i = 0; i < sessionWin.length; i++) {
     var tabs = sessionWin[i].tabs;
     for (var j = 0; j < tabs.length; j++) {
-      if (tabs[j].searchHashTag(hashtag))
-        alert(tabs[j].title);
-      
+      var tabid = tabs[j].id;
+      var history = tabhistory[tabid];
+      if(history)
+      tabs[j].pushTabhistory(history);
     };
   };
- }
+}
+
+function copy(oldwin, newwin){
+  for(i=0;i<oldwin.length;i++){
+    newwin[i] = new Window(oldwin[i].id);
+    // console.log(oldwin.tabs.l)
+    newwin[i].tabs = oldwin[i].tabs.slice();
+  }
+}
+
+function UndoDelete(){
+
+  if(stack.length>0){
+    var key = stack.pop();
+    var windows = stack.pop();
+    console.log("done key = "+key);
+    if(key!=-1){
+      var item = JSON.stringify(windows);
+      localStorage.setItem(key,item);
+    }
+    writeTabs(windows);
+  }
+  
+}
+
+function StoreBookMarks(id,title){
+  chrome.bookmarks.getChildren(id, function(children) {
+      children.forEach(function(bookmark) { 
+        var myid = bookmark.id;
+    
+        chrome.bookmarks.getChildren(myid, function(ch){
+          
+          if(ch.length == '0'){
+             var key_with_space = title;
+             var key_without_space = key_with_space.replace(/ /g,"_");
+             var win = JSON.parse(localStorage.getItem(key_without_space));
+             var windows = new Array();
+             windows[0] = new Window(win[0].id);
+             // var windows = new Window(win.id);
+             windows[0].tabs = win[0].tabs;
+             
+             var tab = new Tab(bookmark);
+             windows[0].tabs.push(new Tab(tab));
+             var len1 = windows[0].tabs.length;
+             console.log(len1);
+             var item = JSON.stringify(windows);
+             localStorage.setItem(key_without_space,item);
+          }
+          else{
+             var key_with_space = bookmark.title;
+             var key_without_space = key_with_space.replace(/ /g,"_");
+             var win = new Array();
+             win[0] = new Window(bookmark.id);
+             // var win = new Window(bookmark.id);
+             var item = JSON.stringify(win); 
+             localStorage.setItem(key_without_space,item);
+             StoreBookMarks(bookmark.id,bookmark.title);
+          }
+        });
+    });
+ });
+
+}
+
+
+function UnSavedSession(){
+  
+  var currentdate = new Date(); 
+  var key_without_space = "Last_Sync_" + currentdate.getDate() + "_"
+                + (currentdate.getMonth()+1)  + "_" 
+                + currentdate.getFullYear() + "_"  
+                + currentdate.getHours() + "_"  
+                + currentdate.getMinutes() + "_" 
+                + currentdate.getSeconds();
+  
+  if(queue.length == 10){
+    var key = queue.shift();
+    console.log(key);
+    localStorage.removeItem(key);
+  }
+  queue.push(key_without_space);
+  chrome.windows.getAll( {populate : true}, function (windows){
+            var item = JSON.stringify(windows);
+            localStorage.setItem(key_without_space,item);
+            console.log(key_without_space);
+          });
+
+   if(currentSessionID==-1)
+      location.reload();
+}
+
+function TimeInterval(){
+  chrome.alarms.create('alarm1',{periodInMinutes : 1.0});
+}
+
+
+chrome.alarms.onAlarm.addListener(function(alerm){
+  console.log("jwhdb");
+  UnSavedSession();
+});
+
+
+function ClearAll(){
+  localStorage.clear();
+  location.reload();
+}
+
+
 
 document.getElementById("Save").onclick = function () { save(sessionWin); };
 document.getElementById("Delete").onclick = function() { removeCheckedboxes(); };
 document.getElementById("Restore").onclick = function() { openWindow(sessionWin , -1);};
 document.getElementById("currentSession").onclick = function(){getAllWindows(writeTabs);};
-//document.getElementById("Merge").onclick = function(){mergeSession();};
-//document.getElementById("Delbutton").onclick = function(){deleteSession();};
-document.getElementById("Search").onclick = function() { display(document.getElementById("searchtext").value);}
+document.getElementById("Search").onclick = function() { searchall(document.getElementById("searchtext").value);}
+document.getElementById("undo").onclick = function() { UndoDelete(); }
+document.getElementById("import").onclick = function() { StoreBookMarks("0",""); }
+document.getElementById("clear").onclick = function() { ClearAll(); };
+TimeInterval();
 getAllWindows(writeTabs);
-//printAll();
