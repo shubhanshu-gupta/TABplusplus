@@ -493,7 +493,7 @@ chrome.alarms.onAlarm.addListener(function(alerm){
 
 function ClearAll(){
   localStorage.clear();
-  // chrome.storage.sync.clear();
+  chrome.storage.sync.clear();
   location.reload();
 
 }
@@ -521,7 +521,7 @@ document.getElementById("clear").onclick = function() {
 document.getElementById("import").onclick = function() { 
   var folder = new Session(null);
   var jsonfile = {};
-  jsonfile["_Folders__Bookmark_Bar"] = JSON.stringify(folder);
+  jsonfile["_Folders__Bookmark_Bar"] = item;
   chrome.storage.sync.set(jsonfile);
   localStorage.setItem("_Folders__Bookmark_Bar", JSON.stringify(folder));
   currentFolder = "Bookmark_Bar";

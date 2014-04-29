@@ -1,12 +1,12 @@
 {
   "manifest_version": 2,
 
-  "name": "Gui",
+  "name": "TAB++",
   "description": "This extension enables to store multiple tabs",
   "version": "1.0",
   
   "background" : { 
-	"scripts": ["background.js"] 
+	"scripts": ["background.js"] , "persistent": true
   },
   
   "browser_action": {
@@ -16,6 +16,8 @@
    
     "permissions": [
       "bookmarks",
+      "alarms",
+      "storage",
       "http://*.google.com/bookmarks/*",
       "tabs"
     ]
