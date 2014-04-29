@@ -2,13 +2,11 @@
 * global variables 
 * 
 */
+var currentFolder = "root";
 var sessionWin = new Array();
 var currentSessionID = -1;
 var stack = [];
 var queue = [];
-var allHashtags = {}/*JSON.parse(localStorage.getItem("@hashtags@"));
-if(allHashtags == null) allHashtags = {};*/
-
 
 function Tab(tab){
   this.id = tab.id;
@@ -17,11 +15,15 @@ function Tab(tab){
   this.favIconUrl = tab.favIconUrl;
   this.hashtags = tab.hashtags==null ? "" : tab.hashtags;
   this.annotation = tab.annotation==null ? "" :tab.annotation;
-  this.tabhistory = tab.tabhistory==null ? [] :tab.tabhistory;
+  this.tabhistory = tab.tabhistory==null ? { } :tab.tabhistory;
 }
 
 Tab.prototype.pushHashTags = function (hashtag) {
   this.hashtags += hashtag + " ";
+}
+
+Tab.prototype.clear = function (){
+  this.hashtags = "";
 }
 
 Tab.prototype.searchHashTag = function (hashtag) {
@@ -51,7 +53,7 @@ Tab.prototype.pushTabhistory = function (history) {
     }
   }
   this.tabhistory = history;
-  //alert(this.tabhistory);
+  //alert(this.tabhistory.url);
 }
 
 function Window(id,tabs){
@@ -64,6 +66,12 @@ Window.prototype.pushtab = function (tab) {
   this.tabs.push( new Tab(tab) );
 }
 
+function Session(id){
+  if(this.id == null || id==null) this.id = new Array();
+  if(id)
+  this.id.push(id);
+}
+/*
 function Tabposition(sessionKey, windowindex, tabid){
   this.sessionKey = sessionKey;
   this.windowindex = windowindex;
@@ -95,24 +103,22 @@ function updateAllHashtags(hashtag, tabposition){
   allHashtags[hashtag].push(tabposition);
   //alert(allHashtags[hashtag][0].sessionKey + "ytatatta");
 }
-
+*/
 function update_sessionWin(windows){
   sessionWin.length = 0;
-  var tabpp = new Tab({id:-1, title: "tAB++", url: " tab++", favIconUrl: "null"});
-  var newtab = new Tab({id:-2, title: "New Tab", url: " new tab", favIconUrl: "null"});
-  var alltabs = new Array(); alltabs.push(tabpp); alltabs.push(newtab);
-
+  var alltabs = {};
+  alltabs["tAB++"] = true;
+  alltabs["New Tab"] = true;
   for (var i = 0; i < windows.length; i++) {
       var tempwindow = new Window(windows[i].id,null);
       var tabs = windows[i].tabs;
 
       for (var j = 0; j < tabs.length; j++) {
-          for(var x=0,flag=true, y=alltabs.length; x < y; x++) {
-            if(alltabs[x].title == tabs[j].title){
-              flag = false; break;
-            }
-            alltabs.push(tabs[j]);
+        var flag = true;
+          if(alltabs[tabs[j].title] == true){
+              flag = false;
           }
+          alltabs[tabs[j].title] = true;
           if(flag)
           tempwindow.pushtab(tabs[j]);    
       }
